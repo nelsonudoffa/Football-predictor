@@ -78,10 +78,15 @@ function dailyProb(home,away,leagueAvg){
   const H=teamStats[home], A=teamStats[away];
   if(!H||!A||!H.played||!A.played)return null;
   const lg=Math.max(.3,leagueAvg);
-  const hGF=H.gf/H.played, hGA=H.ga/H.played, aGF=A.gf/A.played, aGA=A.ga/A.played;
-  const l=Math.max(.15,(hGF/lg)*(aGA/lg)*lg*1.08);
-  const m=Math.max(.15,(aGF/lg)*(hGA/lg)*lg*.92);
-  const p=probs(l,m,-.05);
+  // Shrink small venue samples toward overall rates to reduce noisy extremes.
+  const rate=(sum,n,fallback,prior=4)=>(sum+fallback*prior)/(n+prior);
+  const hGF=rate(H.homeGF,H.homeN,H.gf/H.played), hGA=rate(H.homeGA,H.homeN,H.ga/H.played);
+  const aGF=rate(A.awayGF,A.awayN,A.gf/A.played), aGA=rate(A.awayGA,A.awayN,A.ga/A.played);
+  let l=(hGF/lg)*(aGA/lg)*lg*1.08, m=(aGF/lg)*(hGA/lg)*lg*.92;
+  // Recent form contributes modestly; capped so a short streak cannot dominate season data.
+  if(H.recentN){const r=H.recentGF/H.recentN;l=l*.8+Math.max(.15,r)*.2}
+  if(A.recentN){const r=A.recentGF/A.recentN;m=m*.8+Math.max(.15,r)*.2}
+  const p=probs(Math.max(.15,l),Math.max(.15,m),-.05);
   const outcomes=[{label:'Home win',p:p.H},{label:'Draw',p:p.D},{label:'Away win',p:p.A}].sort((x,y)=>y.p-x.p);
   return outcomes.map(o=>({...o,odds:1/Math.max(.0001,o.p)}));
 }
@@ -96,7 +101,17 @@ $('dailyLoadBtn').addEventListener('click',async()=>{
   const rows=standings.standings?.[0]?.table||[];
   if(!rows.length)throw Error('No standings found. Check the season year and API access.');
   teamStats={};
-  rows.forEach(t=>{teamStats[t.team.name]={name:t.team.name,gf:t.goalsFor,ga:t.goalsAgainst,played:t.playedGames}});
+  rows.forEach(t=>{teamStats[t.team.name]={name:t.team.name,gf:t.goalsFor,ga:t.goalsAgainst,played:t.playedGames,homeGF:0,homeGA:0,homeN:0,awayGF:0,awayGA:0,awayN:0,recentGF:0,recentN:0}});
+  // Enrich the season table with venue-specific and recent completed-match rates.
+  const completed=(matchesData.matches||[]).filter(m=>m.status==='FINISHED'&&m.score?.fullTime?.home!=null&&m.score?.fullTime?.away!=null).sort((a,b)=>new Date(a.utcDate)-new Date(b.utcDate));
+  const recentByTeam={};
+  completed.forEach(m=>{
+   const h=teamStats[m.homeTeam?.name],a=teamStats[m.awayTeam?.name],hg=m.score.fullTime.home,ag=m.score.fullTime.away;
+   if(h){h.homeGF+=hg;h.homeGA+=ag;h.homeN++}
+   if(a){a.awayGF+=ag;a.awayGA+=hg;a.awayN++}
+   [[m.homeTeam?.name,hg],[m.awayTeam?.name,ag]].forEach(([team,g])=>{if(!teamStats[team])return;(recentByTeam[team]??=[]).push({date:m.utcDate,gf:g})});
+  });
+  Object.keys(recentByTeam).forEach(team=>{const recent=recentByTeam[team].slice(-5),t=teamStats[team];t.recentN=recent.length;t.recentGF=recent.reduce((s,x)=>s+x.gf,0)});
   const now=new Date(),start=new Date(now.getFullYear(),now.getMonth(),now.getDate()),end=new Date(start.getTime()+86400000);
   const fixtures=(matchesData.matches||[]).filter(m=>{
    const d=new Date(m.utcDate);
@@ -121,7 +136,7 @@ $('dailyLoadBtn').addEventListener('click',async()=>{
    $('accRows').innerHTML=acc.map(({f,pick})=>'<tr><td>'+f.home+' vs '+f.away+'</td><td>'+pick.label+'</td><td>'+(100*pick.p).toFixed(1)+'%</td><td>'+pick.odds.toFixed(2)+'</td></tr>').join('');
    $('accCount').textContent=acc.length;$('accOdds').textContent=combined.toFixed(2);$('accChance').textContent=(100*joint).toFixed(4)+'%';
   }
-  showMsg('dailyMsg','Loaded '+fixtures.length+' fixtures with usable standings data. Times are shown in your device timezone; probabilities and fair odds are model estimates.',true);
+  showMsg('dailyMsg','Loaded '+fixtures.length+' fixtures. Model blends season strength, home/away scoring rates and last-five scoring form; probabilities and fair odds are estimates, not verified bookmaker odds.',true);
  }catch(e){showMsg('dailyMsg','Could not generate daily picks: '+e.message,false)}
  finally{btn.disabled=false;btn.textContent="Generate today's predictions"}
 });
