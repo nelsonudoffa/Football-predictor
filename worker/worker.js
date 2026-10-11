@@ -79,7 +79,7 @@ async function handleAccess(request, env, url) {
     if (existing) return json(request,{ok:true,requestId:existing.request_id,status:"pending",message:"You already have a pending request. Contact the administrator if you need to correct its details."});
     const requestId=id(), now=new Date().toISOString();
     await env.DB.prepare("INSERT INTO fp_payment_requests (request_id,device_id,student_name,email,phone,method,reference,amount_naira,status,created_at) VALUES (?,?,?,?,?,?,?,?,'pending',?)").bind(requestId,deviceId,name,email,phone,method,reference,PRICE_NAIRA,now).run();
-    await env.DB.prepare("UPDATE fp_users SET contact_email=?, contact_name=?, updated_at=? WHERE device_id=?").bind(email,name,now,deviceId).run();
+    await env.DB.prepare("UPDATE fp_users SET contact_email=?, contact_name=?, access_status='pending', updated_at=? WHERE device_id=?").bind(email,name,now,deviceId).run();
     const message = [
       "FOOTBALL PREDICTOR — PAYMENT APPROVAL REQUEST",
       "Request ID: "+requestId,
