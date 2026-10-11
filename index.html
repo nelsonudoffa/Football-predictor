@@ -13,8 +13,24 @@
 #neltech-contact .call{background:var(--panel2);color:var(--text);border:1px solid var(--line)}
 #neltech-contact .wa{background:#25d366;color:#062b16}
 </style>
+
+<style>
+#neltech-top-contact{max-width:1200px;margin:0 auto 8px;padding:12px 18px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;background:#142338;border:1px solid #38d887;border-radius:12px;color:#edf3fc}
+#neltech-top-contact .brand{font-weight:900;letter-spacing:1.5px;color:#38d887}
+#neltech-top-contact .actions{display:flex;flex-wrap:wrap;gap:8px}
+#neltech-top-contact a{display:inline-block;padding:8px 12px;border-radius:8px;text-decoration:none;font-weight:800}
+#neltech-top-contact .call{color:#edf3fc;border:1px solid #52647d}
+#neltech-top-contact .wa{color:#062b16;background:#25d366}
+@media(max-width:500px){#neltech-top-contact{margin:0 12px 8px;padding:12px}#neltech-top-contact .actions{width:100%}#neltech-top-contact .actions a{flex:1;text-align:center}}
+</style>
 </head><body>
 <header><div><h1>⚽ Football Predictor</h1><div class="muted">Match probabilities · correct scores · backtesting</div></div><span class="pill">ESTIMATES, NOT GUARANTEES</span></header>
+
+<div id="neltech-top-contact">
+  <div><span class="brand">NELTECH</span><div>Football Predictor · Call or WhatsApp +234 706 681 2516</div></div>
+  <div class="actions"><a class="call" href="tel:+2347066812516">📞 Call NELTECH</a><a class="wa" href="https://wa.me/2347066812516" target="_blank" rel="noopener noreferrer">WhatsApp NELTECH</a></div>
+</div>
+
 <main><nav><button class="tab active" id="tabP" type="button">Predict a match</button><button class="tab" id="tabB" type="button">Backtest model</button><button class="tab" id="tabD" type="button">Daily picks</button></nav>
 <section id="viewP" class="layout"><aside class="panel">
 <div class="sect">Live data connection</div><p class="hint">Secure API connection via Cloudflare Worker. No API key is needed on this page.</p>
