@@ -109,14 +109,14 @@ $('dailyLoadBtn').addEventListener('click',async()=>{
   $('dailyRows').innerHTML=fixtures.map(f=>'<tr><td>'+f.home+' vs '+f.away+'<br><span class="muted">'+f.date.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})+'</span></td><td>'+f.best.label+'</td><td>'+(100*f.best.p).toFixed(1)+'%</td><td>'+f.best.odds.toFixed(2)+'</td></tr>').join('');
   let acc=[],combined=1,joint=1;
   for(const f of fixtures){
-   const pick=f.outcomes.find(o=>o.p>0&&o.odds>=1.01);
+   const pick=f.outcomes.find(o=>o.p>0&&o.odds>=1.8);
    if(!pick)continue;
    acc.push({f,pick});combined*=pick.odds;joint*=pick.p;
    if(combined>=50)break;
   }
   if(combined<50){
-   $('accRows').innerHTML='<tr><td colspan="4">Available fixtures do not reach 50.00 model-fair odds today. No selections were fabricated.</td></tr>';
-   $('accCount').textContent=acc.length;$('accOdds').textContent=combined.toFixed(2);$('accChance').textContent=(100*joint).toFixed(3)+'%';
+   $('accRows').innerHTML=acc.length?acc.map(({f,pick})=>'<tr><td>'+f.home+' vs '+f.away+'</td><td>'+pick.label+'</td><td>'+(100*pick.p).toFixed(1)+'%</td><td>'+pick.odds.toFixed(2)+'</td></tr>').join(''):'<tr><td colspan="4">No suitable selections found for today's available fixtures.</td></tr>';
+   $('accCount').textContent=acc.length;$('accOdds').textContent=combined.toFixed(2);$('accChance').textContent=(100*joint).toFixed(4)+'%';
   }else{
    $('accRows').innerHTML=acc.map(({f,pick})=>'<tr><td>'+f.home+' vs '+f.away+'</td><td>'+pick.label+'</td><td>'+(100*pick.p).toFixed(1)+'%</td><td>'+pick.odds.toFixed(2)+'</td></tr>').join('');
    $('accCount').textContent=acc.length;$('accOdds').textContent=combined.toFixed(2);$('accChance').textContent=(100*joint).toFixed(4)+'%';
