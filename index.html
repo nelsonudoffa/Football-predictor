@@ -47,7 +47,8 @@
 <p class="hint">Shows the strongest model-estimated outcome for each available fixture. A higher single-match probability does not mean the whole accumulator has that probability.</p>
 <div style="overflow-x:auto"><table><thead><tr><th>Fixture</th><th>Suggested outcome</th><th>Model probability</th><th>Fair odds</th></tr></thead><tbody id="dailyRows"><tr><td colspan="4">No predictions loaded yet.</td></tr></tbody></table></div>
 <p class="hint">Probability estimates depend on limited standings-based goal rates and may be poorly calibrated. This tool does not provide live bookmaker odds, injury/news data, or guaranteed results.</p>
-</div></section>\n<div class="hint">Football Predictor · Free static website · Does not place bets or guarantee results.</div></main>
+</div></section>
+<div class="hint">Football Predictor · Free static website · Does not place bets or guarantee results.</div></main>
 <script>
 'use strict';
 const $=id=>document.getElementById(id), val=id=>{const n=Number($(id).value);return Number.isFinite(n)?n:0}, name=id=>$(id).value.trim();
@@ -64,7 +65,8 @@ const API_PROXY='https://football-predictor-api.nelsonudoffa.workers.dev';
 async function fetchJSON(url){const source=new URL(url);const proxyUrl=API_PROXY+source.pathname+source.search;const r=await fetch(proxyUrl);if(!r.ok)throw Error('API HTTP '+r.status+(r.status===403?' — check the API key secret in Cloudflare.':r.status===429?' — rate limit reached.':''));return r.json()}
 $('loadBtn').addEventListener('click',async()=>{let b=$('loadBtn');b.disabled=true;b.textContent='Loading…';try{let data=await fetchJSON('https://api.football-data.org/v4/competitions/'+encodeURIComponent($('comp').value)+'/standings?season='+encodeURIComponent($('season').value));let rows=data.standings?.[0]?.table||[];if(!rows.length)throw Error('No standings returned for this season.');teamStats={};let sh=$('selH'),sa=$('selA');[sh,sa].forEach(sel=>sel.innerHTML='<option value="">Manual input</option>');rows.forEach(t=>{teamStats[t.team.name]={name:t.team.name,gf:t.goalsFor,ga:t.goalsAgainst,played:t.playedGames};[sh,sa].forEach(sel=>{let o=document.createElement('option');o.value=t.team.name;o.textContent=t.team.name;sel.appendChild(o)})});let played=rows.reduce((s,t)=>s+t.playedGames,0),goals=rows.reduce((s,t)=>s+t.goalsFor,0);if(played){let per=goals/played/2;$('lgH').value=(per*1.08).toFixed(2);$('lgA').value=(per*.92).toFixed(2)}showMsg('fetchMsg','Loaded '+rows.length+' teams from '+(data.competition?.name||$('comp').value)+'. Select teams and review the rate estimates.',true)}catch(e){showMsg('fetchMsg','Could not load live data: '+e.message,false)}finally{b.disabled=false;b.textContent='Load teams & stats'}});
 $('tabP').addEventListener('click',()=>{ $('viewP').classList.remove('hidden');$('viewB').classList.add('hidden');$('tabP').classList.add('active');$('tabB').classList.remove('active')});
-$('tabB').addEventListener('click',()=>{ $('viewB').classList.remove('hidden');$('viewP').classList.add('hidden');$('tabB').classList.add('active');$('tabP').classList.remove('active')});\n
+$('tabB').addEventListener('click',()=>{ $('viewB').classList.remove('hidden');$('viewP').classList.add('hidden');$('tabB').classList.add('active');$('tabP').classList.remove('active')});
+
 function activateTab(which){
   ['P','B','D'].forEach(k=>{
     $('view'+k).classList.toggle('hidden',k!==which);
@@ -130,7 +132,7 @@ $('dailyLoadBtn').addEventListener('click',async()=>{
    if(combined>=50)break;
   }
   if(combined<50){
-   $('accRows').innerHTML=acc.length?acc.map(({f,pick})=>'<tr><td>'+f.home+' vs '+f.away+'</td><td>'+pick.label+'</td><td>'+(100*pick.p).toFixed(1)+'%</td><td>'+pick.odds.toFixed(2)+'</td></tr>').join(''):'<tr><td colspan="4">No suitable selections found for today's available fixtures.</td></tr>';
+   $('accRows').innerHTML=acc.length?acc.map(({f,pick})=>'<tr><td>'+f.home+' vs '+f.away+'</td><td>'+pick.label+'</td><td>'+(100*pick.p).toFixed(1)+'%</td><td>'+pick.odds.toFixed(2)+'</td></tr>').join(''):'<tr><td colspan="4">No suitable selections found for today available fixtures.</td></tr>';
    $('accCount').textContent=acc.length;$('accOdds').textContent=combined.toFixed(2);$('accChance').textContent=(100*joint).toFixed(4)+'%';
   }else{
    $('accRows').innerHTML=acc.map(({f,pick})=>'<tr><td>'+f.home+' vs '+f.away+'</td><td>'+pick.label+'</td><td>'+(100*pick.p).toFixed(1)+'%</td><td>'+pick.odds.toFixed(2)+'</td></tr>').join('');
