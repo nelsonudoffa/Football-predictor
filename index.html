@@ -86,7 +86,7 @@ function predict(){const [l,m]=expected(),p=probs(l,m,Math.max(-.3,Math.min(0,va
 let teamStats={};
 function fillTeam(id,home){let t=teamStats[$(id).value];if(!t)return;if(home){$('homeName').value=t.name;$('hSc').value=(t.gf/Math.max(1,t.played)).toFixed(2);$('hCc').value=(t.ga/Math.max(1,t.played)).toFixed(2)}else{$('awayName').value=t.name;$('aSc').value=(t.gf/Math.max(1,t.played)).toFixed(2);$('aCc').value=(t.ga/Math.max(1,t.played)).toFixed(2)}}
 $('selH').addEventListener('change',()=>fillTeam('selH',true));$('selA').addEventListener('change',()=>fillTeam('selA',false));$('predictBtn').addEventListener('click',runPrediction);
-const API_PROXY='https://football-predictor-api.nelsonudoffa.workers.dev';
+const API_PROXY='https://football-predictor-api-v2.nelsonudoffa.workers.dev';
 const DEVICE_KEY='fp_device_id_v1';
 function getDeviceId(){let v=localStorage.getItem(DEVICE_KEY);if(!v){v=(crypto.randomUUID?crypto.randomUUID():('fp_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2))).replace(/[^a-zA-Z0-9_-]/g,'');localStorage.setItem(DEVICE_KEY,v)}return v}
 let accessInfo={paid:false,predictionsUsed:0,freeLimit:3,accessStatus:'free'};
